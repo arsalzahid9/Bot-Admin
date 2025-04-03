@@ -1,32 +1,21 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Mail, ArrowLeft } from 'lucide-react';
-import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 
 export default function ForgotPassword() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
-  const [submitted, setSubmitted] = useState(false);
+  const [submitted] = useState(false);
+
+  const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    toast.success("Otp sent to email. Plz check")
 
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-
-      if (error) throw error;
-
-      setSubmitted(true);
-      toast.success('Password reset instructions sent to your email!');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to send reset instructions');
-    } finally {
-      setLoading(false);
-    }
+    navigate('/otp-verification')
   };
 
   if (submitted) {
@@ -92,7 +81,6 @@ export default function ForgotPassword() {
           <div>
             <button
               type="submit"
-              disabled={loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Sending...' : 'Send reset instructions'}

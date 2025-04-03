@@ -11,6 +11,7 @@ import Marketplaces from './pages/Marketplaces';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
+import OtpVerification from './pages/OtpVerification';
 
 function App() {
   const [isSidebarOpen, setSidebarOpen] = useState<boolean>(false);
@@ -24,6 +25,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/otp-verification" element={<OtpVerification />} />
         <Route
           path="/*"
           element={
