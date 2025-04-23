@@ -1,13 +1,27 @@
-import React, { useState, useRef } from 'react';
-import { ArrowLeft } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import React, { useState, useRef, useEffect } from "react";
+import { ArrowLeft } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { otpVerify } from "../api/Auth/opt-verify";
 
 export default function OtpVerification() {
-  const [otp, setOtp] = useState<string[]>(Array(6).fill(''));
+  const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
   const [loading, setLoading] = useState(false);
   const inputsRef = useRef<HTMLInputElement[]>([]);
   const navigate = useNavigate();
+
+  // Get email from localStorage (set it in ForgotPassword page)
+  const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    const storedEmail = localStorage.getItem("reset_email");
+    if (!storedEmail) {
+      toast.error("No email found. Please restart the process.");
+      navigate("/forgot-password");
+    } else {
+      setEmail(storedEmail);
+    }
+  }, []);
 
   const handleChange = (value: string, index: number) => {
     if (!/^[0-9]?$/.test(value)) return;
@@ -16,32 +30,40 @@ export default function OtpVerification() {
     newOtp[index] = value;
     setOtp(newOtp);
 
-    // Auto focus next input
     if (value && index < 5) {
       inputsRef.current[index + 1]?.focus();
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    index: number
+  ) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputsRef.current[index - 1]?.focus();
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const otpCode = otp.join('');
+    const otpCode = otp.join("");
 
     if (otpCode.length !== 6) {
-      toast.error('Please enter all 6 digits');
+      toast.error("Please enter all 6 digits");
       return;
     }
 
     setLoading(true);
-    setTimeout(() => {
-      toast.success('OTP verified successfully');
-      navigate('/login');
-    }, 1000);
+    try {
+      const response = await otpVerify({ email, otp: otpCode });
+      console.log("OTP verification response:", response);
+      toast.success("OTP verified successfully!");
+      navigate("/changePassword");
+    } catch (error: any) {
+      toast.error(error?.message || "OTP verification failed.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -52,7 +74,8 @@ export default function OtpVerification() {
             Enter OTP Code
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            We sent a 6-digit OTP to your email. Please enter it below to continue.
+            We sent a 6-digit OTP to your email. Please enter it below to
+            continue.
           </p>
         </div>
 
@@ -80,7 +103,7 @@ export default function OtpVerification() {
               disabled={loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Verifying...' : 'Verify OTP'}
+              {loading ? "Verifying..." : "Verify OTP"}
             </button>
           </div>
 

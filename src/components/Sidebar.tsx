@@ -1,6 +1,6 @@
 // components/Sidebar.tsx
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, Store, Settings as SettingsIcon } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Store, Settings as SettingsIcon, User } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -12,7 +12,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/posts', icon: ShoppingBag, label: 'Posts' },
     { to: '/marketplaces', icon: Store, label: 'Marketplaces' },
-    { to: '/settings', icon: SettingsIcon, label: 'Settings' },
+    { to: '/profile', icon: User, label: 'Profile' },
   ];
 
   return (
@@ -22,7 +22,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       }`}
     >
       <div className="py-5 px-6 flex justify-between items-center md:block">
-        <h1 className="text-2xl font-bold text-gray-800">BOT Admin</h1>
+        <NavLink to="/" className="block">
+          <h1 className="text-2xl font-bold text-gray-800">BOT Admin</h1>
+        </NavLink>
         <button className="text-gray-600 md:hidden" onClick={onClose}>
           ✕
         </button>
