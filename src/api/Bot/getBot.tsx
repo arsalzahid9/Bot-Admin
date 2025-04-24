@@ -2,12 +2,12 @@ import axios from "axios";
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
-export const fetchPosts = async (page: number = 1, perPage: number = 10) => {
+export const getBot = async (page: number = 1, perPage: number = 10) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/fetch/post`, {
+    const response = await axios.get(`${API_BASE_URL}/bot`, {
       headers: {
         authorization: `Bearer ${localStorage.getItem("token")}`,
-        "Content-Type": "multipart/form-data",
+        "Content-Type": "application/json",
       },
       params: {
         page,

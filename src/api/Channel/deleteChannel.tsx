@@ -2,16 +2,11 @@ import axios from "axios";
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
-export const fetchPosts = async (page: number = 1, perPage: number = 10) => {
+export const deleteChannel = async (id: string | number) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/fetch/post`, {
+    const response = await axios.get(`${API_BASE_URL}/channel/delete/${id}`, {
       headers: {
         authorization: `Bearer ${localStorage.getItem("token")}`,
-        "Content-Type": "multipart/form-data",
-      },
-      params: {
-        page,
-        per_page: perPage,
       },
     });
     return response.data;

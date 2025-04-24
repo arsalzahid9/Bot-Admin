@@ -10,14 +10,16 @@ import toast, { Toaster } from "react-hot-toast";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 
-import Dashboard from "./pages/Dashboard";
-import Posts from "./pages/Posts";
-import Marketplaces from "./pages/Marketplaces";
-import Login from "./pages/Login";
-import ForgotPassword from "./pages/ForgotPassword";
-import OtpVerification from "./pages/OtpVerification";
-import ChangePassword from "./pages/ChangePassword";
-import Profile from "./pages/Profile";
+import Dashboard from "./pages/Dashboard/Dashboard";
+import Posts from "./pages/Post/Posts";
+import Marketplaces from "./pages/Marketplace/Marketplaces";
+import Login from "./pages/Auth/Login";
+import ForgotPassword from "./pages/Auth/ForgotPassword";
+import OtpVerification from "./pages/Auth/OtpVerification";
+import ChangePassword from "./pages/Auth/ChangePassword";
+import Profile from "./pages/Profile/Profile";
+import { Channel } from "./pages/Channel/Channel";
+import { Bot } from "./pages/Bot/Bot";
 
 function App() {
   const [isSidebarOpen, setSidebarOpen] = useState<boolean>(false);
@@ -82,6 +84,8 @@ function App() {
                       <Route path="/" element={<Dashboard />} />
                       <Route path="/posts" element={<Posts />} />
                       <Route path="/marketplaces" element={<Marketplaces />} />
+                      <Route path="/channel" element={<Channel />} />
+                      <Route path="/bot" element={<Bot />} />
                       <Route path="/profile" element={<Profile />}/>
                     </Routes>
                   </div>

@@ -1,6 +1,6 @@
 // components/Sidebar.tsx
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, Store, Settings as SettingsIcon, User } from 'lucide-react';
+import { LayoutDashboard,MessageCircle,Bot, ShoppingBag, Store, Settings as SettingsIcon, User } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -12,6 +12,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/posts', icon: ShoppingBag, label: 'Posts' },
     { to: '/marketplaces', icon: Store, label: 'Marketplaces' },
+    { to: '/channel', icon: MessageCircle, label: 'Channel' },
+    { to: '/bot', icon: Bot, label: 'Bot' },
     { to: '/profile', icon: User, label: 'Profile' },
   ];
 
