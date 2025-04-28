@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { CheckCircle, XCircle, Plus, ChevronLeft, ChevronRight, RefreshCw, Pencil,Heart } from "lucide-react";
+import { CheckCircle, XCircle, Plus, ChevronLeft, ChevronRight, RefreshCw, Pencil,Heart,Upload } from "lucide-react";
 import type { Post } from "../../types";
 import toast from "react-hot-toast";
 import { createPost } from "../../api/Post/createPost";
@@ -884,16 +884,26 @@ function Posts() {
 
   return (
     <div className="p-4 md:p-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-        <h1 className="text-2xl font-bold text-gray-800">Posts Management</h1>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-blue-600"
-        >
-          <Plus className="w-5 h-5 mr-2" />
-          Create Post
-        </button>
-      </div>
+    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+  <h1 className="text-2xl font-bold text-gray-800">Posts Management</h1>
+  <div className="flex gap-2 mt-4 md:mt-0">
+    <button
+      onClick={() => setIsUploadModalOpen(true)} // You can replace this with your upload logic
+      className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-green-600"
+    >
+      <Upload className="w-5 h-5 mr-2" /> {/* Assuming you have an Upload icon */}
+      Upload CSV
+    </button>
+    <button
+      onClick={() => setIsModalOpen(true)}
+      className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-blue-600"
+    >
+      <Plus className="w-5 h-5 mr-2" />
+      Create Post
+    </button>
+  </div>
+</div>
+
 
       {/* 3. Loader UI */}
       {loading ? (
