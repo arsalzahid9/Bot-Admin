@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, ChevronLeft, ChevronRight,Pencil, Trash } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Pencil, Trash } from "lucide-react";
 import { createChannel } from "../../api/Channel/createChannel";
 import toast from "react-hot-toast";
 import { getChannel } from "../../api/Channel/getChannel";
@@ -308,36 +308,36 @@ export const Channel = () => {
             </tbody>
           </table>
           {/* Pagination Controls */}
-          <div className="flex justify-center mt-4 space-x-2">
-              <button
-                onClick={() => setCurrentPage(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50 hover:bg-gray-300"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
+          <div className="flex justify-center mt-4 space-x-2 mb-6">
+            <button
+              onClick={() => setCurrentPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50 hover:bg-gray-300"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
 
-              {Array.from({ length: totalPages }, (_, i) => (
-                <button
-                  key={i + 1}
-                  onClick={() => setCurrentPage(i + 1)}
-                  className={`px-4 py-2 rounded ${currentPage === i + 1
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200 hover:bg-gray-300"
-                    }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
-
+            {Array.from({ length: totalPages }, (_, i) => (
               <button
-                onClick={() => setCurrentPage(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50 hover:bg-gray-300"
+                key={i + 1}
+                onClick={() => setCurrentPage(i + 1)}
+                className={`px-4 py-2 rounded ${currentPage === i + 1
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-200 hover:bg-gray-300"
+                  }`}
               >
-                <ChevronRight className="w-5 h-5" />
+                {i + 1}
               </button>
-            </div>
+            ))}
+
+            <button
+              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50 hover:bg-gray-300"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       )}
     </div>

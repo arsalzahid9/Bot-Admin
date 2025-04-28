@@ -10,7 +10,7 @@ import { getMarketPlaceDropdown } from "../../api/Marketplace/getMarketPlaceDrop
 import { rejectPost } from "../../api/Post/rejectPost";
 import { resendPost } from "../../api/Post/resendPost";
 import { getChannelDropdown } from "../../api/Channel/getChannelDropdown";
-import EditPostModal from "./EditPostModal";
+import EditPostModal from "../Post/EditPostModal";
 
 function CreatePostModal({
   isOpen,
@@ -786,14 +786,14 @@ function ActionsDropdown({
         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
       >
         <div className="flex items-center">
-          <Heart className="w-4 h-4 mr-2 text-pink-600" />
-          Add to Favorite
+          <Heart className="w-4 h-4 mr-2 text-pink-600" fill="currentColor" />
+          Remove from Favorite
         </div>
       </button>
     </div>
   );
 }
-function Posts() {
+function FavoritePosts() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
@@ -885,14 +885,14 @@ function Posts() {
   return (
     <div className="p-4 md:p-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-        <h1 className="text-2xl font-bold text-gray-800">Posts Management</h1>
-        <button
+        <h1 className="text-2xl font-bold text-gray-800">Favorite Posts</h1>
+        {/* <button
           onClick={() => setIsModalOpen(true)}
           className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-blue-600"
         >
           <Plus className="w-5 h-5 mr-2" />
           Create Post
-        </button>
+        </button> */}
       </div>
 
       {/* 3. Loader UI */}
@@ -1080,7 +1080,7 @@ function Posts() {
   );
 }
 
-export default Posts;
+export default FavoritePosts;
 
 // Inside your table rendering logic where you create the action column
 {/* <td className="flex items-center gap-2">

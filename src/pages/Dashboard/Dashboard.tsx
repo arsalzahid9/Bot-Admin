@@ -186,6 +186,7 @@ function Dashboard() {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-sm font-medium text-gray-900 underline underline-offset-2"
+                            title={post.product_link} // Tooltip added here
                           >
                             {post.product_name}
                           </a>
@@ -204,13 +205,12 @@ function Dashboard() {
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          post.status === 'approve'
-                            ? 'bg-green-100 text-green-800'
-                            : post.status === 'reject'
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${post.status === 'approve'
+                          ? 'bg-green-100 text-green-800'
+                          : post.status === 'reject'
                             ? 'bg-red-100 text-red-800'
                             : 'bg-yellow-100 text-yellow-800'
-                        }`}
+                          }`}
                       >
                         {post.status.charAt(0).toUpperCase() + post.status.slice(1)}
                       </span>

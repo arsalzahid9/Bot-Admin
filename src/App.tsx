@@ -9,7 +9,6 @@ import {
 import toast, { Toaster } from "react-hot-toast";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
-
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Posts from "./pages/Post/Posts";
 import Marketplaces from "./pages/Marketplace/Marketplaces";
@@ -20,6 +19,8 @@ import ChangePassword from "./pages/Auth/ChangePassword";
 import Profile from "./pages/Profile/Profile";
 import { Channel } from "./pages/Channel/Channel";
 import { Bot } from "./pages/Bot/Bot";
+import Coupon from "./pages/Coupon/Coupon";
+import FavoritePost from "./pages/FavoritePost/FavoritePost";
 
 function App() {
   const [isSidebarOpen, setSidebarOpen] = useState<boolean>(false);
@@ -54,9 +55,12 @@ function App() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        Loading...
-      </div>
+      <div className="absolute right-3 top-2">
+      <svg className="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+    </div>
     );
   }
 
@@ -83,9 +87,11 @@ function App() {
                     <Routes>
                       <Route path="/" element={<Dashboard />} />
                       <Route path="/posts" element={<Posts />} />
+                      <Route path="/favorite-posts" element={<FavoritePost />} />
                       <Route path="/marketplaces" element={<Marketplaces />} />
                       <Route path="/channel" element={<Channel />} />
                       <Route path="/bot" element={<Bot />} />
+                      <Route path="/coupon" element={<Coupon />} />
                       <Route path="/profile" element={<Profile />}/>
                     </Routes>
                   </div>

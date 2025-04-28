@@ -284,7 +284,7 @@ export const Bot = () => {
             </tbody>
           </table>
           {/* Pagination Controls */}
-          <div className="flex justify-center mt-4 space-x-2">
+          <div className="flex justify-center mt-4 space-x-2 mb-6">
             <button
               onClick={() => setCurrentPage(currentPage - 1)}
               disabled={currentPage === 1}
