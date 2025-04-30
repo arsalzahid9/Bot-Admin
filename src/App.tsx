@@ -19,7 +19,7 @@ import ChangePassword from "./pages/Auth/ChangePassword";
 import Profile from "./pages/Profile/Profile";
 import { Channel } from "./pages/Channel/Channel";
 import { Bot } from "./pages/Bot/Bot";
-import Coupon from "./pages/Coupon/Coupon";
+import {Coupon} from "./pages/Coupon/Coupon";
 import FavoritePost from "./pages/FavoritePost/FavoritePost";
 
 function App() {

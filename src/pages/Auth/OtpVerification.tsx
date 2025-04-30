@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft,Bot } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { otpVerify } from "../../api/Auth/opt-verify";
@@ -70,7 +70,10 @@ export default function OtpVerification() {
     <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-white px-8 py-5 rounded-lg shadow-md">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <div className="flex justify-center">
+            <Bot className="h-16 w-16 text-blue-600 mb-4" />
+          </div>
+          <h2 className="mt-2 text-center text-3xl font-extrabold text-gray-900">
             Enter OTP Code
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">

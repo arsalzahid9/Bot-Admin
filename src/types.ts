@@ -19,6 +19,7 @@ export interface Post {
   status: string;
   updated_at: string;
   user_id: any;
+  is_favorite: boolean; 
 }
 export interface Marketplace {
   id: string;
@@ -39,4 +40,12 @@ export interface Stats {
   approvedPosts: number;
   rejectedPosts: number;
   activeMarketplaces: number;
+}
+interface Channel {
+  id: number;
+  user_id: number;
+  name: string;
+  channel_username: string;
+  created_at: string;
+  updated_at: string;
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { CheckCircle, XCircle, Plus, ChevronLeft, ChevronRight, RefreshCw, Pencil,Heart,Upload } from "lucide-react";
+import { CheckCircle, XCircle, Plus, ChevronLeft, ChevronRight, RefreshCw, Pencil, Heart, Upload } from "lucide-react";
 import type { Post } from "../../types";
 import toast from "react-hot-toast";
 import { createPost } from "../../api/Post/createPost";
@@ -10,7 +10,10 @@ import { getMarketPlaceDropdown } from "../../api/Marketplace/getMarketPlaceDrop
 import { rejectPost } from "../../api/Post/rejectPost";
 import { resendPost } from "../../api/Post/resendPost";
 import { getChannelDropdown } from "../../api/Channel/getChannelDropdown";
+import { addToFavorite } from "../../api/Post/favorite";
 import EditPostModal from "./EditPostModal";
+import UploadCSVModal from "./UploadCSVModal";
+
 
 function CreatePostModal({
   isOpen,
@@ -48,7 +51,7 @@ function CreatePostModal({
     convertedLink: "",
     imageUrl: null,
     purchaseType: "",
-    coupons: [""],
+    // coupons: [""],
     specialConditions: [""],
     photo: null as File | null,
     schedulePost: "",
@@ -128,11 +131,11 @@ function CreatePostModal({
       const data = new FormData();
 
       data.append("channelId", JSON.stringify(formData.channelIds));
-      // Use only imageUrl for both file and URL
+      // Use image for both file and URL
       if (formData.photo) {
-        data.append("imageUrl", formData.photo);
+        data.append("image", formData.photo);
       } else if (formData.imageUrl) {
-        data.append("imageUrl", formData.imageUrl);
+        data.append("image", formData.imageUrl);
       }
       data.append("market_place", formData.marketplace);
       data.append("productLink", formData.productLink);
@@ -140,7 +143,7 @@ function CreatePostModal({
       data.append("priceMin", formData.priceMin.toString());
       data.append("priceMax", formData.priceMax.toString());
       data.append("currentprice", formData.currentPrice.toString());
-      data.append("coupon", formData.coupons.filter((c) => c).join(","));
+      // data.append("coupon", formData.coupons.filter((c) => c).join(","));
       data.append("purchaseType", formData.purchaseType);
       data.append("converted_link", formData.convertedLink);
       data.append(
@@ -172,7 +175,7 @@ function CreatePostModal({
         imageUrl: null,
         affiliateLink: "",
         purchaseType: "",
-        coupons: [""],
+        // coupons: [""],
         specialConditions: [""],
         photo: null,
       });
@@ -301,7 +304,7 @@ function CreatePostModal({
       imageUrl: null,
       affiliateLink: "",
       purchaseType: "",
-      coupons: [""],
+      // coupons: [""],
       specialConditions: [""],
       photo: null,
     });
@@ -508,7 +511,7 @@ function CreatePostModal({
             />
           </div>
 
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-900 mb-1">
               Converted Link
             </label>
@@ -522,7 +525,7 @@ function CreatePostModal({
               }
               disabled={!formData.marketplace}
             />
-          </div>
+          </div> */}
 
           <div>
             <label className="block text-sm font-medium text-gray-900 mb-1">
@@ -581,32 +584,6 @@ function CreatePostModal({
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-900 mb-1">
-              Coupons
-            </label>
-            {formData.coupons.map((coupon, idx) => (
-              <input
-                key={idx}
-                type="text"
-                className="w-full px-3 py-2 border mb-2"
-                value={coupon}
-                onChange={(e) => {
-                  const updated = [...formData.coupons];
-                  updated[idx] = e.target.value;
-                  setFormData({ ...formData, coupons: updated });
-                }}
-                disabled={!formData.marketplace}
-              />
-            ))}
-            {/* <button
-              type="button"
-              onClick={() => setFormData({...formData, coupons: [...formData.coupons, ""]})}
-              className="text-blue-500"
-            >
-              + Add Another Coupon
-            </button> */}
-          </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-900 mb-1">
@@ -699,6 +676,8 @@ function ActionsDropdown({
   onReject,
   onResend,
   onEdit,
+  fetchPostsData,
+  isResending, // Add this prop
 }: {
   post: Post;
   onClose: () => void;
@@ -706,12 +685,25 @@ function ActionsDropdown({
   onReject: () => void;
   onResend: () => void;
   onEdit: () => void;
+  fetchPostsData: () => Promise<void>;
+  isResending: boolean; // Add this prop
 }) {
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isFavorite, setIsFavorite] = useState(post.is_favorite);
 
   useOutsideClick(dropdownRef, () => {
     onClose();
   });
+  const handleFavoriteClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await addToFavorite(post.id);
+      setIsFavorite(!isFavorite);
+      toast.success(isFavorite ? "Removed from favorites!" : "Added to favorites!");
+    } catch (error) {
+      toast.error(error?.message || "Failed to update favorites");
+    }
+  };
 
   return (
     <div
@@ -759,11 +751,18 @@ function ActionsDropdown({
           ? "text-gray-400 cursor-not-allowed"
           : "text-gray-700 hover:bg-gray-100"
           }`}
-        disabled={post.status === "schedule"}
+        disabled={post.status === "schedule" || isResending}
       >
         <div className="flex items-center">
-          <RefreshCw className="w-4 h-4 mr-2 text-blue-600" />
-          Resend
+          {isResending ? (
+            <svg className="animate-spin h-4 w-4 mr-2 text-blue-600" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          ) : (
+            <RefreshCw className="w-4 h-4 mr-2 text-blue-600" />
+          )}
+          {isResending ? 'Resending...' : 'Resend'}
         </div>
       </button>
       <button
@@ -779,16 +778,33 @@ function ActionsDropdown({
         </div>
       </button>
       <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onFavorite();
-        }}
+        onClick={
+          async (e) => {
+            e.stopPropagation();
+            try {
+              await addToFavorite(post.id);
+              toast.success(post.isFavorite ? "Removed from favorites!" : "Added to favorites!");
+              await fetchPostsData();
+            } catch (error) {
+              toast.error("Failed to update favorite status");
+            }
+          }
+        }
         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
       >
-        <div className="flex items-center">
-          <Heart className="w-4 h-4 mr-2 text-pink-600" />
-          Add to Favorite
-        </div>
+        <span className="flex items-center">
+          {post.isFavorite === 1 ? (
+            <>
+              <Heart className="w-4 h-4 mr-2 text-blue-600" fill="red" color="red" />
+              Remove from Favorite
+            </>
+          ) : (
+            <>
+              <Heart className="w-4 h-4 mr-2 text-red-600" />
+              Add to Favorite
+            </>
+          )}
+        </span>
       </button>
     </div>
   );
@@ -796,6 +812,8 @@ function ActionsDropdown({
 function Posts() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   const handleEditClick = (post: Post) => {
     setSelectedPost(post);
@@ -808,10 +826,14 @@ function Posts() {
   };
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+const [resending, setResending] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [resendingPosts, setResendingPosts] = useState<Record<string, boolean>>({}); // Add this state
+
 
   const handleResendPost = async (postId: string) => {
+    setResendingPosts(prev => ({ ...prev, [postId]: true }));
     try {
       await resendPost(postId);
       toast.success("Post resent successfully");
@@ -819,8 +841,11 @@ function Posts() {
     } catch (error) {
       console.error("Resend error:", error);
       toast.error("Failed to resend post");
+    } finally {
+      setResendingPosts(prev => ({ ...prev, [postId]: false }));
     }
   };
+  
 
   // Pagination states: define here at the top level of Posts component
   const [currentPage, setCurrentPage] = useState(1);
@@ -884,25 +909,25 @@ function Posts() {
 
   return (
     <div className="p-4 md:p-8">
-    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-  <h1 className="text-2xl font-bold text-gray-800">Posts Management</h1>
-  <div className="flex gap-2 mt-4 md:mt-0">
-    <button
-      onClick={() => setIsUploadModalOpen(true)} // You can replace this with your upload logic
-      className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-green-600"
-    >
-      <Upload className="w-5 h-5 mr-2" /> {/* Assuming you have an Upload icon */}
-      Upload CSV
-    </button>
-    <button
-      onClick={() => setIsModalOpen(true)}
-      className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-blue-600"
-    >
-      <Plus className="w-5 h-5 mr-2" />
-      Create Post
-    </button>
-  </div>
-</div>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+        <h1 className="text-2xl font-bold text-gray-800">Posts Management</h1>
+        <div className="flex gap-2 mt-4 md:mt-0">
+          <button
+            onClick={() => setIsUploadModalOpen(true)}
+            className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-green-600"
+          >
+            <Upload className="w-5 h-5 mr-2" />
+            Upload CSV
+          </button>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-blue-600"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Create Post
+          </button>
+        </div>
+      </div>
 
 
       {/* 3. Loader UI */}
@@ -1031,6 +1056,8 @@ function Posts() {
                           onReject={() => handleRejectPost(post.id)}
                           onResend={() => handleResendPost(post.id)}
                           onEdit={() => handleEditClick(post)}
+                          fetchPostsData={fetchPostsData}
+                          isResending={resendingPosts[post.id] || false} // Pass the resending state
                         />
                       )}
                     </div>
@@ -1081,6 +1108,12 @@ function Posts() {
         onPostEdited={fetchPostsData}
       />
 
+      <UploadCSVModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onUploaded={fetchPostsData}
+      />
+
       <CreatePostModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -1092,14 +1125,5 @@ function Posts() {
 
 export default Posts;
 
-// Inside your table rendering logic where you create the action column
-{/* <td className="flex items-center gap-2">
-  <button
-    onClick={() => handleResendPost(post.id)}
-    className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-  >
-    Resend
-  </button>
-</td> */}
 
 

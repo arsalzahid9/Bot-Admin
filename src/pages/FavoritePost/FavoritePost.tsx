@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
-import { CheckCircle, XCircle, Plus, ChevronLeft, ChevronRight, RefreshCw, Pencil,Heart } from "lucide-react";
+import { CheckCircle, XCircle, Plus, ChevronLeft, ChevronRight, RefreshCw, Pencil, Heart } from "lucide-react";
 import type { Post } from "../../types";
 import toast from "react-hot-toast";
 import { createPost } from "../../api/Post/createPost";
-import { fetchPosts } from "../../api/Post/fetchPosts";
+import { fetchFavoritePosts } from "../../api/Post/getFavoritePost";
 import { statusChange } from "../../api/Post/statusChange";
 import { getProductDetail } from "../../api/Post/getProductDetail";
 import { getMarketPlaceDropdown } from "../../api/Marketplace/getMarketPlaceDropdown";
 import { rejectPost } from "../../api/Post/rejectPost";
 import { resendPost } from "../../api/Post/resendPost";
 import { getChannelDropdown } from "../../api/Channel/getChannelDropdown";
+import { addToFavorite } from "../../api/Post/favorite";
 import EditPostModal from "../Post/EditPostModal";
 
 function CreatePostModal({
@@ -22,19 +23,14 @@ function CreatePostModal({
   onPostCreated: () => void; // Add this prop type
 }) {
 
-  interface Channel {
-    id: number;
-    user_id: number;
-    name: string;
-    channel_username: string;
-    created_at: string;
-    updated_at: string;
-  }
+
   const [channels, setChannels] = useState<Channel[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [resendingPosts, setResendingPosts] = useState<Record<string, boolean>>({});
+
   const [formData, setFormData] = useState({
     channelIds: [""],
     marketplace: "",
@@ -699,6 +695,7 @@ function ActionsDropdown({
   onReject,
   onResend,
   onEdit,
+  isResending, // Add this prop
 }: {
   post: Post;
   onClose: () => void;
@@ -706,6 +703,7 @@ function ActionsDropdown({
   onReject: () => void;
   onResend: () => void;
   onEdit: () => void;
+  isResending: boolean; // Add this prop
 }) {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -717,6 +715,7 @@ function ActionsDropdown({
     <div
       ref={dropdownRef}
       className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+      style={{ position: 'fixed', top: 'auto', bottom: 'auto' }}
     >
       <button
         onClick={(e) => {
@@ -750,7 +749,7 @@ function ActionsDropdown({
           Reject
         </div>
       </button>
-      <button
+      {/* <button
         onClick={(e) => {
           e.stopPropagation();
           onResend();
@@ -765,8 +764,8 @@ function ActionsDropdown({
           <RefreshCw className="w-4 h-4 mr-2 text-blue-600" />
           Resend
         </div>
-      </button>
-      <button
+      </button> */}
+          <button
         onClick={(e) => {
           e.stopPropagation();
           onEdit();
@@ -781,12 +780,43 @@ function ActionsDropdown({
       <button
         onClick={(e) => {
           e.stopPropagation();
-          onFavorite();
+          onResend();
+        }}
+        className={`block px-4 py-2 text-sm w-full text-left ${post.status === "schedule"
+          ? "text-gray-400 cursor-not-allowed"
+          : "text-gray-700 hover:bg-gray-100"
+          }`}
+        disabled={post.status === "schedule" || isResending}
+      >
+        <div className="flex items-center">
+          {isResending ? (
+            <svg className="animate-spin h-4 w-4 mr-2 text-blue-600" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          ) : (
+            <RefreshCw className="w-4 h-4 mr-2 text-blue-600" />
+          )}
+          {isResending ? 'Resending...' : 'Resend'}
+        </div>
+      </button>
+      <button
+        onClick={async (e) => {
+          e.stopPropagation();
+          try {
+            await addToFavorite(post.id);
+            toast.success("Removed from favorites!");
+            if (typeof window.fetchPostsData === 'function') {
+              await window.fetchPostsData();
+            }
+          } catch (error) {
+            toast.error(error?.message || "Failed to remove from favorites");
+          }
         }}
         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
       >
         <div className="flex items-center">
-          <Heart className="w-4 h-4 mr-2 text-pink-600" fill="currentColor" />
+          <Heart className="w-4 h-4 mr-2 text-pink-600 fill-current" />
           Remove from Favorite
         </div>
       </button>
@@ -796,6 +826,7 @@ function ActionsDropdown({
 function FavoritePosts() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [resendingPosts, setResendingPosts] = useState<Record<string, boolean>>({}); // Add this state
 
   const handleEditClick = (post: Post) => {
     setSelectedPost(post);
@@ -812,6 +843,7 @@ function FavoritePosts() {
   const [loading, setLoading] = useState(true);
 
   const handleResendPost = async (postId: string) => {
+    setResendingPosts(prev => ({ ...prev, [postId]: true }));
     try {
       await resendPost(postId);
       toast.success("Post resent successfully");
@@ -819,6 +851,8 @@ function FavoritePosts() {
     } catch (error) {
       console.error("Resend error:", error);
       toast.error("Failed to resend post");
+    } finally {
+      setResendingPosts(prev => ({ ...prev, [postId]: false }));
     }
   };
 
@@ -839,21 +873,26 @@ function FavoritePosts() {
   };
 
   const fetchPostsData = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await fetchPosts(currentPage, itemsPerPage);
-
-      if (response.data && Array.isArray(response.data.data)) {
-        setPosts(response.data.data);
-        setTotalPages(response.data.pagination.last_page);
+      const response = await fetchFavoritePosts(currentPage, itemsPerPage);
+      if (response && response.data) {
+        setPosts(response.data);
+        setTotalPages(response.pagination.pagination.total_pages);
       }
     } catch (error) {
-      console.error("Error fetching posts:", error);
-      toast.error("Failed to load posts");
+      toast.error("Failed to fetch favorite posts");
     } finally {
       setLoading(false);
     }
   };
+  // Make fetchPostsData globally accessible for ActionsDropdown
+  useEffect(() => {
+    window.fetchPostsData = fetchPostsData;
+    return () => {
+      delete window.fetchPostsData;
+    };
+  }, [fetchPostsData]);
 
   useEffect(() => {
     fetchPostsData();
@@ -901,7 +940,7 @@ function FavoritePosts() {
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
         </div>
       ) : (
-        <div className="border border-lg bg-white overflow-auto">
+        <div className="border border-lg bg-white overflow-auto" style={{ minHeight: '400px' }}>
           <table className="min-w-full">
             <thead className="border-b border-gray-300">
               <tr>
@@ -1021,6 +1060,7 @@ function FavoritePosts() {
                           onReject={() => handleRejectPost(post.id)}
                           onResend={() => handleResendPost(post.id)}
                           onEdit={() => handleEditClick(post)}
+                          isResending={resendingPosts[post.id] || false} // Pass the resending state
                         />
                       )}
                     </div>
@@ -1063,6 +1103,9 @@ function FavoritePosts() {
             </div>
           )}
         </div>
+        
+        
+        
       )}
       <EditPostModal
         isOpen={isEditModalOpen}
@@ -1082,14 +1125,5 @@ function FavoritePosts() {
 
 export default FavoritePosts;
 
-// Inside your table rendering logic where you create the action column
-{/* <td className="flex items-center gap-2">
-  <button
-    onClick={() => handleResendPost(post.id)}
-    className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-  >
-    Resend
-  </button>
-</td> */}
 
 
