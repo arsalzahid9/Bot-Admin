@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { getCouponModal } from "../../api/Coupon/getCouponModal";
-import { updateCouponModal } from "../../api/Coupon/updateCouponModal";
+import { updateCouponModal } from "../../api/Coupon/UpdateCouponModal";
 
 interface UpdateCouponModalProps {
   isOpen: boolean;
