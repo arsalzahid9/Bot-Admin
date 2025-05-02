@@ -31,6 +31,8 @@ function CreatePostModal({
   const [isLoading, setIsLoading] = useState(false);
   const [resendingPosts, setResendingPosts] = useState<Record<string, boolean>>({});
 
+
+
   const [formData, setFormData] = useState({
     channelIds: [""],
     marketplace: "",
@@ -696,6 +698,8 @@ function ActionsDropdown({
   onResend,
   onEdit,
   isResending, // Add this prop
+  isApproving,
+  isRejecting,
 }: {
   post: Post;
   onClose: () => void;
@@ -704,8 +708,12 @@ function ActionsDropdown({
   onResend: () => void;
   onEdit: () => void;
   isResending: boolean; // Add this prop
+  isApproving: boolean;
+  isRejecting: boolean;
 }) {
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
 
   useOutsideClick(dropdownRef, () => {
     onClose();
@@ -723,103 +731,123 @@ function ActionsDropdown({
           onApprove();
         }}
         className={`block px-4 py-2 text-sm w-full text-left ${post.status === "approve" || post.status === "reject" || post.status === "schedule"
-          ? "text-gray-400 cursor-not-allowed"
-          : "text-gray-700 hover:bg-gray-100"
+            ? "text-gray-400 cursor-not-allowed"
+            : "text-gray-700 hover:bg-gray-100"
           }`}
-        disabled={post.status === "approve" || post.status === "reject" || post.status === "schedule"}
+        disabled={post.status === "approve" || post.status === "reject" || post.status === "schedule" || isApproving}
       >
         <div className="flex items-center">
-          <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
-          Approve
-        </div>
-      </button>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onReject();
-        }}
-        className={`block px-4 py-2 text-sm w-full text-left ${post.status === "approve" || post.status === "reject" || post.status === "schedule"
-          ? "text-gray-400 cursor-not-allowed"
-          : "text-gray-700 hover:bg-gray-100"
-          }`}
-        disabled={post.status === "approve" || post.status === "reject" || post.status === "schedule"}
-      >
-        <div className="flex items-center">
-          <XCircle className="w-4 h-4 mr-2 text-red-600" />
-          Reject
-        </div>
-      </button>
-      {/* <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onResend();
-        }}
-        className={`block px-4 py-2 text-sm w-full text-left ${post.status === "schedule"
-          ? "text-gray-400 cursor-not-allowed"
-          : "text-gray-700 hover:bg-gray-100"
-          }`}
-        disabled={post.status === "schedule"}
-      >
-        <div className="flex items-center">
-          <RefreshCw className="w-4 h-4 mr-2 text-blue-600" />
-          Resend
-        </div>
-      </button> */}
-          <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onEdit();
-        }}
-        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-      >
-        <div className="flex items-center">
-          <Pencil className="w-4 h-4 mr-2 text-blue-600" />
-          Edit
-        </div>
-      </button>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onResend();
-        }}
-        className={`block px-4 py-2 text-sm w-full text-left ${post.status === "schedule"
-          ? "text-gray-400 cursor-not-allowed"
-          : "text-gray-700 hover:bg-gray-100"
-          }`}
-        disabled={post.status === "schedule" || isResending}
-      >
-        <div className="flex items-center">
-          {isResending ? (
+          {isApproving ? (
             <svg className="animate-spin h-4 w-4 mr-2 text-blue-600" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
           ) : (
-            <RefreshCw className="w-4 h-4 mr-2 text-blue-600" />
+            <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
           )}
-          {isResending ? 'Resending...' : 'Resend'}
+          {isApproving ? 'Approving...' : 'Approve'}
         </div>
       </button>
-      <button
-        onClick={async (e) => {
+
+   <button
+        onClick={(e) => {
           e.stopPropagation();
-          try {
-            await addToFavorite(post.id);
-            toast.success("Removed from favorites!");
-            if (typeof window.fetchPostsData === 'function') {
-              await window.fetchPostsData();
-            }
-          } catch (error) {
-            toast.error(error?.message || "Failed to remove from favorites");
-          }
+          onReject();
         }}
-        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+        className={`block px-4 py-2 text-sm w-full text-left ${
+          post.status === "approve" || post.status === "reject" || post.status === "schedule"
+            ? "text-gray-400 cursor-not-allowed"
+            : "text-gray-700 hover:bg-gray-100"
+        }`}
+        disabled={post.status === "approve" || post.status === "reject" || post.status === "schedule" || isRejecting}
       >
         <div className="flex items-center">
-          <Heart className="w-4 h-4 mr-2 text-pink-600 fill-current" />
-          Remove from Favorite
+          {isRejecting ? (
+            <svg className="animate-spin h-4 w-4 mr-2 text-blue-600" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          ) : (
+            <XCircle className="w-4 h-4 mr-2 text-red-600" />
+          )}
+          {isRejecting ? 'Rejecting...' : 'Reject'}
         </div>
       </button>
+     
+       
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit();
+          }}
+          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+        >
+          <div className="flex items-center">
+            <Pencil className="w-4 h-4 mr-2 text-blue-600" />
+            Edit
+          </div>
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onResend();
+          }}
+          className={`block px-4 py-2 text-sm w-full text-left ${post.status === "schedule"
+            ? "text-gray-400 cursor-not-allowed"
+            : "text-gray-700 hover:bg-gray-100"
+            }`}
+          disabled={post.status === "schedule" || isResending}
+        >
+          <div className="flex items-center">
+            {isResending ? (
+              <svg className="animate-spin h-4 w-4 mr-2 text-blue-600" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            ) : (
+              <RefreshCw className="w-4 h-4 mr-2 text-blue-600" />
+            )}
+            {isResending ? 'Resending...' : 'Resend'}
+          </div>
+        </button>
+    
+        <button
+          onClick={async (e) => {
+            e.stopPropagation();
+            try {
+              setIsLoading(true);
+              await addToFavorite(post.id);
+              toast.success("Removed from favorites!");
+              if (typeof window.fetchPostsData === 'function') {
+                await window.fetchPostsData();
+              }
+            } catch (error) {
+              toast.error(error?.message || "Failed to remove from favorites");
+            } finally {
+              setIsLoading(false);
+            }
+          }}
+          disabled={isLoading}
+          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left disabled:opacity-50"
+        >
+          <div className="flex items-center">
+            {isLoading ? (
+              <>
+                <svg className="animate-spin h-4 w-4 mr-2 text-pink-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Removing...
+              </>
+            ) : (
+              <>
+                <Heart className="w-4 h-4 mr-2 text-pink-600 fill-current" />
+                Remove from Favorite
+              </>
+            )}
+          </div>
+        </button>
+
     </div>
   );
 }
@@ -827,6 +855,9 @@ function FavoritePosts() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [resendingPosts, setResendingPosts] = useState<Record<string, boolean>>({}); // Add this state
+  const [approvingPosts, setApprovingPosts] = useState<Record<string, boolean>>({});
+  const [rejectingPosts, setRejectingPosts] = useState<Record<string, boolean>>({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleEditClick = (post: Post) => {
     setSelectedPost(post);
@@ -863,12 +894,14 @@ function FavoritePosts() {
 
   const handleRejectPost = async (postId: string) => {
     try {
+      setRejectingPosts(prev => ({ ...prev, [postId]: true }));
       await rejectPost(postId);
       toast.success("Post rejected successfully");
-      await fetchPostsData(); // Refresh after reject
+      await fetchPostsData();
     } catch (error) {
-      console.error("Reject error:", error);
-      toast.error(`Failed to reject post: ${error}`);
+      toast.error("Failed to reject post");
+    } finally {
+      setRejectingPosts(prev => ({ ...prev, [postId]: false }));
     }
   };
 
@@ -898,21 +931,30 @@ function FavoritePosts() {
     fetchPostsData();
   }, [currentPage]); // Refetch when page changes
 
-  const handleStatusChange = async (
-    postId: string,
-    newStatus: "approve" | "reject"
-  ) => {
+  const handleStatusChange = async (postId: string, newStatus: "approve" | "reject") => {
     try {
+      // Set loading state
+      if (newStatus === "approve") {
+        setApprovingPosts(prev => ({ ...prev, [postId]: true }));
+      } else {
+        setRejectingPosts(prev => ({ ...prev, [postId]: true }));
+      }
+
       await statusChange(postId, newStatus);
-      setPosts(
-        posts.map((post) =>
-          post.id === postId ? { ...post, status: newStatus } : post
-        )
-      );
-      toast.success(`Post status changed to ${newStatus}`);
-      await fetchPostsData(); // Refresh after approve/reject
+      setPosts(posts.map(post =>
+        post.id === postId ? { ...post, status: newStatus } : post
+      ));
+      toast.success(`Post ${newStatus}d successfully`);
+      await fetchPostsData();
     } catch (error) {
-      toast.error(`Failed to change status: ${error}`);
+      toast.error(`Failed to ${newStatus} post`);
+    } finally {
+      // Clear loading state
+      if (newStatus === "approve") {
+        setApprovingPosts(prev => ({ ...prev, [postId]: false }));
+      } else {
+        setRejectingPosts(prev => ({ ...prev, [postId]: false }));
+      }
     }
   };
 
@@ -1061,6 +1103,9 @@ function FavoritePosts() {
                           onResend={() => handleResendPost(post.id)}
                           onEdit={() => handleEditClick(post)}
                           isResending={resendingPosts[post.id] || false} // Pass the resending state
+                          isApproving={approvingPosts[post.id] || false}
+                          isRejecting={rejectingPosts[post.id] || false}
+
                         />
                       )}
                     </div>
@@ -1103,9 +1148,9 @@ function FavoritePosts() {
             </div>
           )}
         </div>
-        
-        
-        
+
+
+
       )}
       <EditPostModal
         isOpen={isEditModalOpen}

@@ -62,6 +62,7 @@ function CreatePostModal({
   const itemsPerPage = 10; // Should match your default perPage value
   const [marketplaces, setMarketplaces] = useState<{ value: string; label: string }[]>([]);
 
+
   const filteredChannels = channels.filter((channel) =>
     channel.channel_username.toLowerCase().includes(searchTerm.toLowerCase()) ||
     channel.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -678,6 +679,8 @@ function ActionsDropdown({
   onEdit,
   fetchPostsData,
   isResending, // Add this prop
+  isApproving,  // Add this prop
+  isRejecting,  // Add this prop
 }: {
   post: Post;
   onClose: () => void;
@@ -687,9 +690,13 @@ function ActionsDropdown({
   onEdit: () => void;
   fetchPostsData: () => Promise<void>;
   isResending: boolean; // Add this prop
+  isApproving: boolean;  // Add this prop
+  isRejecting: boolean;  // Add this prop
 }) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [isFavorite, setIsFavorite] = useState(post.is_favorite);
+  const [isLoading, setIsLoading] = useState(false);
+
 
   useOutsideClick(dropdownRef, () => {
     onClose();
@@ -719,13 +726,21 @@ function ActionsDropdown({
           ? "text-gray-400 cursor-not-allowed"
           : "text-gray-700 hover:bg-gray-100"
           }`}
-        disabled={post.status === "approve" || post.status === "reject" || post.status === "schedule"}
+        disabled={post.status === "approve" || post.status === "reject" || post.status === "schedule" || isApproving}
       >
         <div className="flex items-center">
-          <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
-          Approve
+          {isApproving ? (
+            <svg className="animate-spin h-4 w-4 mr-2 text-blue-600" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          ) : (
+            <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
+          )}
+          {isApproving ? 'Approving...' : 'Approve'}
         </div>
       </button>
+
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -735,11 +750,18 @@ function ActionsDropdown({
           ? "text-gray-400 cursor-not-allowed"
           : "text-gray-700 hover:bg-gray-100"
           }`}
-        disabled={post.status === "approve" || post.status === "reject" || post.status === "schedule"}
+        disabled={post.status === "approve" || post.status === "reject" || post.status === "schedule" || isRejecting}
       >
         <div className="flex items-center">
-          <XCircle className="w-4 h-4 mr-2 text-red-600" />
-          Reject
+          {isRejecting ? (
+            <svg className="animate-spin h-4 w-4 mr-2 text-blue-600" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          ) : (
+            <XCircle className="w-4 h-4 mr-2 text-red-600" />
+          )}
+          {isRejecting ? 'Rejecting...' : 'Reject'}
         </div>
       </button>
       <button
@@ -777,23 +799,36 @@ function ActionsDropdown({
           Edit
         </div>
       </button>
+
       <button
         onClick={
           async (e) => {
             e.stopPropagation();
             try {
+              setIsLoading(true);
               await addToFavorite(post.id);
               toast.success(post.isFavorite ? "Removed from favorites!" : "Added to favorites!");
               await fetchPostsData();
             } catch (error) {
               toast.error("Failed to update favorite status");
+            } finally {
+              setIsLoading(false);
             }
           }
         }
-        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+        disabled={isLoading}
+        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left disabled:opacity-50"
       >
         <span className="flex items-center">
-          {post.isFavorite === 1 ? (
+          {isLoading ? (
+            <>
+              <svg className="animate-spin h-4 w-4 mr-2 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              {post.isFavorite === 1 ? "Removing..." : "Adding..."}
+            </>
+          ) : post.isFavorite === 1 ? (
             <>
               <Heart className="w-4 h-4 mr-2 text-blue-600" fill="red" color="red" />
               Remove from Favorite
@@ -806,12 +841,15 @@ function ActionsDropdown({
           )}
         </span>
       </button>
+
     </div>
   );
 }
 function Posts() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [approvingPosts, setApprovingPosts] = useState<Record<string, boolean>>({});
+  const [rejectingPosts, setRejectingPosts] = useState<Record<string, boolean>>({});
 
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
@@ -826,7 +864,7 @@ function Posts() {
   };
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-const [resending, setResending] = useState(false);
+  const [resending, setResending] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [resendingPosts, setResendingPosts] = useState<Record<string, boolean>>({}); // Add this state
@@ -845,7 +883,7 @@ const [resending, setResending] = useState(false);
       setResendingPosts(prev => ({ ...prev, [postId]: false }));
     }
   };
-  
+
 
   // Pagination states: define here at the top level of Posts component
   const [currentPage, setCurrentPage] = useState(1);
@@ -854,12 +892,15 @@ const [resending, setResending] = useState(false);
 
   const handleRejectPost = async (postId: string) => {
     try {
-      await rejectPost(postId);
+      setRejectingPosts(prev => ({ ...prev, [postId]: true })); // Set loading state
+      await rejectPost(postId); // This only sends the ID
       toast.success("Post rejected successfully");
       await fetchPostsData(); // Refresh after reject
     } catch (error) {
       console.error("Reject error:", error);
       toast.error(`Failed to reject post: ${error}`);
+    } finally {
+      setRejectingPosts(prev => ({ ...prev, [postId]: false })); // Clear loading state
     }
   };
 
@@ -883,25 +924,21 @@ const [resending, setResending] = useState(false);
   useEffect(() => {
     fetchPostsData();
   }, [currentPage]); // Refetch when page changes
-
-  const handleStatusChange = async (
-    postId: string,
-    newStatus: "approve" | "reject"
-  ) => {
+  const handleStatusChange = async (postId: string) => {
     try {
-      await statusChange(postId, newStatus);
-      setPosts(
-        posts.map((post) =>
-          post.id === postId ? { ...post, status: newStatus } : post
-        )
-      );
-      toast.success(`Post status changed to ${newStatus}`);
-      await fetchPostsData(); // Refresh after approve/reject
+      setApprovingPosts(prev => ({ ...prev, [postId]: true })); // Set loading state
+      await statusChange(postId, "approve"); // Only handles approval now
+      setPosts(posts.map(post =>
+        post.id === postId ? { ...post, status: "approve" } : post
+      ));
+      toast.success("Post approved successfully");
+      await fetchPostsData(); // Refresh after approve
     } catch (error) {
-      toast.error(`Failed to change status: ${error}`);
+      toast.error(`Failed to approve post: ${error}`);
+    } finally {
+      setApprovingPosts(prev => ({ ...prev, [postId]: false })); // Clear loading state
     }
   };
-
   const handleCreatePost = async () => {
     setCurrentPage(1); // Reset to first page after creation
     setIsModalOpen(false);
@@ -1053,11 +1090,13 @@ const [resending, setResending] = useState(false);
                           post={post}
                           onClose={() => setPosts(posts.map(p => ({ ...p, showActions: false })))}
                           onApprove={() => handleStatusChange(post.id, "approve")}
-                          onReject={() => handleRejectPost(post.id)}
+                          onReject={() => handleRejectPost(post.id)} // Uses separate reject function
                           onResend={() => handleResendPost(post.id)}
                           onEdit={() => handleEditClick(post)}
                           fetchPostsData={fetchPostsData}
-                          isResending={resendingPosts[post.id] || false} // Pass the resending state
+                          isResending={resendingPosts[post.id] || false}
+                          isApproving={approvingPosts[post.id] || false}
+                          isRejecting={rejectingPosts[post.id] || false}
                         />
                       )}
                     </div>
