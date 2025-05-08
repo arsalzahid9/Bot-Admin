@@ -51,7 +51,7 @@ function CreatePostModal({
     convertedLink: "",
     imageUrl: null,
     purchaseType: "",
-    // coupons: [""],
+    coupons: [""],
     specialConditions: [""],
     photo: null as File | null,
     schedulePost: "",
@@ -144,7 +144,7 @@ function CreatePostModal({
       data.append("priceMin", formData.priceMin.toString());
       data.append("priceMax", formData.priceMax.toString());
       data.append("currentprice", formData.currentPrice.toString());
-      // data.append("coupon", formData.coupons.filter((c) => c).join(","));
+      data.append("coupons", formData.coupons.filter((c) => c).join(","));
       data.append("purchaseType", formData.purchaseType);
       data.append("converted_link", formData.convertedLink);
       data.append(
@@ -176,7 +176,7 @@ function CreatePostModal({
         imageUrl: null,
         affiliateLink: "",
         purchaseType: "",
-        // coupons: [""],
+        coupons: [""],
         specialConditions: [""],
         photo: null,
       });
@@ -252,6 +252,7 @@ function CreatePostModal({
           priceMax: parsePrice(response.data.priceMax) || prev.priceMax,
           convertedLink: response.data.affiliateLink || prev.affiliateLink,
           imageUrl: response.data.imageUrl || prev.imageUrl,
+          coupons: [response.data.coupons || ""], // Add coupon from API response
           photo: null // Clear photo if imageUrl is set
         }));
 
@@ -305,7 +306,7 @@ function CreatePostModal({
       imageUrl: null,
       affiliateLink: "",
       purchaseType: "",
-      // coupons: [""],
+      coupons: [""],
       specialConditions: [""],
       photo: null,
     });
@@ -604,6 +605,7 @@ function CreatePostModal({
                 disabled={!formData.marketplace}
               />
             ))}
+            
             {/* <button
               type="button"
               onClick={() => setFormData({...formData, specialConditions: [...formData.specialConditions, ""]})}
@@ -611,6 +613,24 @@ function CreatePostModal({
             >
               + Add Another Condition
             </button> */}
+                <div>
+            <label className="block text-sm font-medium text-gray-900 mb-1">
+              Coupon
+            </label>
+            <input
+              type="text"
+              className="w-full px-3 py-2 border"
+              value={formData.coupons[0] || ""}
+              onChange={(e) => {
+                setFormData({
+                  ...formData,
+                  coupons: [e.target.value],
+                });
+              }}
+              disabled={!formData.marketplace}
+              placeholder="Enter coupon code"
+            />
+          </div>
           </div>
 
           <div>
