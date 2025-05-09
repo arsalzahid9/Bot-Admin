@@ -49,7 +49,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
     // convertedLink: "",
     imageUrl: null,
     purchaseType: "",
-    // coupons: [""],
+    coupons: [""],  // Add this line
     specialConditions: [""],
     photo: null as File | null,
     schedulePost: "",
@@ -107,7 +107,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
               // convertedLink: "",
               imageUrl: postData.image || null,
               purchaseType: postData.purchaseType || "",
-              // coupons: postData.coupons ? postData.coupons.split(",") : [""],
+              coupons: postData.coupons ? postData.coupons.split(",") : [""],  // Add this line
               specialConditions: postData.special_conditions ? postData.special_conditions.split(",") : [""],
               photo: null,
               schedulePost: "",
@@ -190,7 +190,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
       data.append("priceMin", formData.priceMin.toString());
       data.append("priceMax", formData.priceMax.toString());
       data.append("currentprice", formData.currentPrice.toString());
-      // data.append("coupon", formData.coupons.filter((c) => c).join(","));
+      data.append("coupon", formData.coupons.filter((c) => c).join(","));  // Add this line
       data.append("purchaseType", formData.purchaseType);
       // data.append("converted_link", formData.convertedLink);
       data.append("special_conditions", formData.specialConditions.filter((c) => c).join(","));
@@ -599,16 +599,20 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
 
           <div>
             <label className="block text-sm font-medium text-gray-900 mb-1">
-              Schedule Post
+              Coupon
             </label>
             <input
-              type="datetime-local"
+              type="text"
               className="w-full px-3 py-2 border"
-              value={formData.schedulePost}
-              onChange={(e) =>
-                setFormData({ ...formData, schedulePost: e.target.value })
-              }
+              value={formData.coupons[0] || ""}
+              onChange={(e) => {
+                setFormData({
+                  ...formData,
+                  coupons: [e.target.value],
+                });
+              }}
               disabled={!formData.marketplace}
+              placeholder="Enter coupon code"
             />
           </div>
           <div className="flex justify-end gap-3">
