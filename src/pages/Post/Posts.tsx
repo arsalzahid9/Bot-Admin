@@ -13,6 +13,7 @@ import { getChannelDropdown } from "../../api/Channel/getChannelDropdown";
 import { addToFavorite } from "../../api/Post/favorite";
 import EditPostModal from "./EditPostModal";
 import UploadCSVModal from "./UploadCSVModal";
+import ScrappingModal from "./ScrappingModal";
 
 
 function CreatePostModal({
@@ -871,7 +872,9 @@ function Posts() {
   const [approvingPosts, setApprovingPosts] = useState<Record<string, boolean>>({});
   const [rejectingPosts, setRejectingPosts] = useState<Record<string, boolean>>({});
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isScrappingModalOpen, setIsScrappingModalOpen] = useState(false);
 
   const handleEditClick = (post: Post) => {
     setSelectedPost(post);
@@ -883,7 +886,6 @@ function Posts() {
     setSelectedPost(null);
   };
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [resending, setResending] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -944,7 +946,7 @@ function Posts() {
   useEffect(() => {
     fetchPostsData();
   }, [currentPage]); // Refetch when page changes
-  const handleStatusChange = async (postId: string) => {
+  const handleStatusChange = async (postId: string, status: string = "approve") => {
     try {
       setApprovingPosts(prev => ({ ...prev, [postId]: true })); // Set loading state
       await statusChange(postId, "approve"); // Only handles approval now
@@ -964,6 +966,10 @@ function Posts() {
     setIsModalOpen(false);
   };
 
+  const handleScrapeClick = () => {
+    setIsScrappingModalOpen(true);
+  };
+
   return (
     <div className="p-4 md:p-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
@@ -975,6 +981,13 @@ function Posts() {
           >
             <Upload className="w-5 h-5 mr-2" />
             Upload CSV
+          </button>
+          <button
+            onClick={() => setIsScrappingModalOpen(true)}
+            className="bg-purple-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-purple-600"
+          >
+            <RefreshCw className="w-5 h-5 mr-2" />
+            Scrape Products
           </button>
           <button
             onClick={() => setIsModalOpen(true)}
@@ -1170,7 +1183,13 @@ function Posts() {
       <UploadCSVModal
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
-        onUploaded={fetchPostsData}
+        onUploadComplete={fetchPostsData}
+      />
+
+      <ScrappingModal
+        isOpen={isScrappingModalOpen}
+        onClose={() => setIsScrappingModalOpen(false)}
+        onScrapeComplete={fetchPostsData}
       />
 
       <CreatePostModal
