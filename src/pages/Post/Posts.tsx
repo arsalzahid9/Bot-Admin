@@ -973,7 +973,7 @@ function Posts() {
       }
     } catch (error) {
       console.error("Error fetching posts:", error);
-      toast.error("Failed to load posts");
+      // toast.error("Failed to load posts");
     } finally {
       setLoading(false);
     }
@@ -1041,8 +1041,14 @@ function Posts() {
         <div className="flex justify-center items-center py-24">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
         </div>
+      ) : posts.length === 0 ? (
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)]">
+          <Heart className="w-12 h-12 text-gray-400 mb-4" />
+          <p className="text-gray-500 text-lg font-medium">No posts found</p>
+          <p className="text-gray-400 text-sm mt-2">Start creating posts to see them here!</p>
+        </div>
       ) : (
-        <div className="border border-lg bg-white overflow-auto">
+        <div className="border border-lg bg-white overflow-auto" style={{ minHeight: '400px' }}>
           <table className="min-w-full">
             <thead className="border-b border-gray-300">
               <tr>
@@ -1228,7 +1234,7 @@ function Posts() {
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
         postId={selectedPostId}
-        onDeleteSuccess={handleDeleteSuccess}
+        onDeleteSuccess={fetchPostsData}
       />
 
       <ScrappingModal

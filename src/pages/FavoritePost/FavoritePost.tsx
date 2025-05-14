@@ -914,7 +914,7 @@ function FavoritePosts() {
         setTotalPages(response.pagination.pagination.total_pages);
       }
     } catch (error) {
-      toast.error("Failed to fetch favorite posts");
+      // toast.error("Failed to fetch favorite posts");
     } finally {
       setLoading(false);
     }
@@ -981,6 +981,12 @@ function FavoritePosts() {
         <div className="flex justify-center items-center py-24">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
         </div>
+      ) : posts.length === 0 ? (
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)]">
+  <Heart className="w-12 h-12 text-gray-400 mb-4" />
+  <p className="text-gray-500 text-lg font-medium">No favorite posts yet</p>
+  <p className="text-gray-400 text-sm mt-2">Start adding posts to your favorites!</p>
+</div>
       ) : (
         <div className="border border-lg bg-white overflow-auto" style={{ minHeight: '400px' }}>
           <table className="min-w-full">

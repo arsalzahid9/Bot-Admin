@@ -22,7 +22,7 @@ const DeletePostModal: React.FC<DeletePostModalProps> = ({
     try {
       await deletePost(postId);
       toast.success('Post deleted successfully!');
-      onDeleteSuccess();
+      onDeleteSuccess(); // This will trigger the table refresh
       onClose();
     } catch (error) {
       console.error('Error deleting post:', error);
