@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { CheckCircle, XCircle, Plus, ChevronLeft, ChevronRight, RefreshCw, Pencil, Heart, Upload } from "lucide-react";
+import { CheckCircle, XCircle, Plus, ChevronLeft, ChevronRight, RefreshCw, Pencil, Heart, Upload, Trash2 } from "lucide-react";
 import type { Post } from "../../types";
 import toast from "react-hot-toast";
 import { createPost } from "../../api/Post/createPost";
@@ -12,6 +12,7 @@ import { resendPost } from "../../api/Post/resendPost";
 import { getChannelDropdown } from "../../api/Channel/getChannelDropdown";
 import { addToFavorite } from "../../api/Post/favorite";
 import EditPostModal from "./EditPostModal";
+import DeletePostModal from "./DeletePostModal";
 import UploadCSVModal from "./UploadCSVModal";
 import ScrappingModal from "./ScrappingModal";
 
@@ -606,7 +607,7 @@ function CreatePostModal({
                 disabled={!formData.marketplace}
               />
             ))}
-            
+
             {/* <button
               type="button"
               onClick={() => setFormData({...formData, specialConditions: [...formData.specialConditions, ""]})}
@@ -614,24 +615,24 @@ function CreatePostModal({
             >
               + Add Another Condition
             </button> */}
-                <div>
-            <label className="block text-sm font-medium text-gray-900 mb-1">
-              Coupon
-            </label>
-            <input
-              type="text"
-              className="w-full px-3 py-2 border"
-              value={formData.coupons[0] || ""}
-              onChange={(e) => {
-                setFormData({
-                  ...formData,
-                  coupons: [e.target.value],
-                });
-              }}
-              disabled={!formData.marketplace}
-              placeholder="Enter coupon code"
-            />
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-1">
+                Coupon
+              </label>
+              <input
+                type="text"
+                className="w-full px-3 py-2 border"
+                value={formData.coupons[0] || ""}
+                onChange={(e) => {
+                  setFormData({
+                    ...formData,
+                    coupons: [e.target.value],
+                  });
+                }}
+                disabled={!formData.marketplace}
+                placeholder="Enter coupon code"
+              />
+            </div>
           </div>
 
           <div>
@@ -702,6 +703,8 @@ function ActionsDropdown({
   isResending, // Add this prop
   isApproving,  // Add this prop
   isRejecting,  // Add this prop
+  setSelectedPostId, // Add this to props
+  handleDeleteClick, // Add this prop
 }: {
   post: Post;
   onClose: () => void;
@@ -713,6 +716,8 @@ function ActionsDropdown({
   isResending: boolean; // Add this prop
   isApproving: boolean;  // Add this prop
   isRejecting: boolean;  // Add this prop
+  setSelectedPostId: React.Dispatch<React.SetStateAction<string | number>>; // Add this type
+  handleDeleteClick: (postId: string | number) => void; // Add this type
 }) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [isFavorite, setIsFavorite] = useState(post.is_favorite);
@@ -821,6 +826,20 @@ function ActionsDropdown({
         </div>
       </button>
 
+      <button 
+  onClick={(e) => {
+    e.stopPropagation();
+    handleDeleteClick(post.id);
+  }}
+  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+>
+  <div className="flex items-center">
+    <Trash2 className="w-4 h-4 mr-2 text-red-600" />
+    Delete
+  </div>
+</button>
+
+
       <button
         onClick={
           async (e) => {
@@ -869,6 +888,17 @@ function ActionsDropdown({
 function Posts() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedPostId, setSelectedPostId] = useState<string | number>('');
+
+
+
+
+  const handleDeleteClick = (postId: string | number) => {
+    setSelectedPostId(postId);
+    setDeleteModalOpen(true);
+
+  };
   const [approvingPosts, setApprovingPosts] = useState<Record<string, boolean>>({});
   const [rejectingPosts, setRejectingPosts] = useState<Record<string, boolean>>({});
 
@@ -881,10 +911,16 @@ function Posts() {
     setIsEditModalOpen(true);
   };
 
+
   const handleEditModalClose = () => {
     setIsEditModalOpen(false);
     setSelectedPost(null);
   };
+  const handleDeleteSuccess = () => {
+    // Refresh posts after deletion
+    fetchPosts(currentPage, itemsPerPage);
+  };
+
 
   const [resending, setResending] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -1130,6 +1166,9 @@ function Posts() {
                           isResending={resendingPosts[post.id] || false}
                           isApproving={approvingPosts[post.id] || false}
                           isRejecting={rejectingPosts[post.id] || false}
+                          setSelectedPostId={setSelectedPostId} // Add this prop
+                          handleDeleteClick={handleDeleteClick} // Add this prop
+
                         />
                       )}
                     </div>
@@ -1183,13 +1222,19 @@ function Posts() {
       <UploadCSVModal
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
-        onUploadComplete={fetchPostsData}
+        onUploaded={fetchPostsData}
+      />
+      <DeletePostModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        postId={selectedPostId}
+        onDeleteSuccess={handleDeleteSuccess}
       />
 
       <ScrappingModal
         isOpen={isScrappingModalOpen}
         onClose={() => setIsScrappingModalOpen(false)}
-        onScrapeComplete={fetchPostsData}
+        onScrapped={fetchPostsData}
       />
 
       <CreatePostModal
