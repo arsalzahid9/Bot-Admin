@@ -362,7 +362,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
             </div>
           </div>
 
-          {/* <div>
+          <div>
             <label className="block text-sm font-medium text-gray-900 mb-1">
               Marketplace
             </label>
@@ -406,7 +406,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
                 </div>
               )}
             </div>
-          </div> */}
+          </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-900 mb-1">
@@ -484,7 +484,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
             />
           </div>
 
-          {/* <div>
+          <div>
             <label className="block text-sm font-medium text-gray-900 mb-1">
               Converted Link
             </label>
@@ -498,7 +498,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
               }
               disabled={!formData.marketplace}
             />
-          </div> */}
+          </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-900 mb-1">

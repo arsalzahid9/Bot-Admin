@@ -147,6 +147,7 @@ const MarketplaceModal: React.FC<MarketplaceModalProps> = ({
               <option value="shopee">Shopee</option>
               <option value="aliexpress">AliExpress</option>
               <option value="mercadolivre">MercadoLivre</option>
+              <option value="others">Others</option>
             </select>
           </div>
 
