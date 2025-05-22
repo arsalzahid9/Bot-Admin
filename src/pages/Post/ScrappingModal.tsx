@@ -22,20 +22,24 @@ const ScrappingModal: React.FC<ScrappingModalProps> = ({ isOpen, onClose, onScra
     }
 
     setIsLoading(true);
+    let apiSuccess = false;
     try {
       const formData = new FormData();
       formData.append('website_name', websiteName);
       formData.append('website_link', url);
 
       await postScrapping(formData);
+      apiSuccess = true;
       toast.success('Products scraped successfully!');
-      onScrapeComplete();
-      onClose();
     } catch (error) {
       console.error('Error scraping products:', error);
       toast.error('Failed to scrape products');
     } finally {
       setIsLoading(false);
+      if (apiSuccess) {
+        onScrapeComplete();
+        onClose();
+      }
     }
   };
 
